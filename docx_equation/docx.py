@@ -7,19 +7,23 @@ import mammoth
 
 from .omml import omml2tex
 
+_omath_pattern = re.compile(r'<m:oMath[^<>]*>.+?</m:oMath>', flags=re.S)
+_omath_para_pattern = re.compile(r'<m:oMathPara\s*>(.+?)</m:oMathPara>',
+                                 flags=re.S)
 
-_omath_pattern = re.compile(r'<m:oMath[^<>]*>.+?</m:oMath>')
 
 def quote_omath(xml_content):
-
     def replace(match):
         quoted_omath = quote(match.group(0))
         return '<w:t>$omml$ {} $/omml$</w:t>'.format(quoted_omath)
 
-    return  _omath_pattern.sub(replace, xml_content)
+    xml_content = _omath_pattern.sub(replace, xml_content)
+    xml_content = _omath_para_pattern.sub(lambda m: m.group(1), xml_content)
+    return xml_content
 
 
 _omml_pattern = re.compile(r'\$omml\$(.+?)\$/omml\$')
+
 
 def convert_quoted_omath_to_tex(html):
     def replace(match):
